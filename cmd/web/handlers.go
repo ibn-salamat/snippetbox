@@ -41,6 +41,11 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 
 	snippet, err := app.snippets.Get(id)
 
+	if err != nil {
+		app.notFound(w)
+		return
+	}
+
 	files := []string{
 		"./ui/html/base.html",
 		"./ui/html/pages/view.html",
