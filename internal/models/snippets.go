@@ -21,9 +21,9 @@ type SnippetModel struct {
 
 func (m *SnippetModel) Insert(title string, content string, expires int) (int, error) {
 	query := fmt.Sprintf(`
-	INSERT INTO snippets (title, content, created, expires)
+	INSERT INTO snippets (Title, Content, Created, Expires)
 	VALUES($1, $2, NOW(), NOW() + INTERVAL '%d day')
-	RETURNING id
+	RETURNING ID
 	`, expires)
 
 	var id int
@@ -39,7 +39,7 @@ func (m *SnippetModel) Insert(title string, content string, expires int) (int, e
 
 func (m *SnippetModel) Get(id int) (*Snippet, error) {
 	query := fmt.Sprintf(`
-	SELECT id, title, content, created, expires FROM snippets where id = $1
+	SELECT ID, Title, Content, Created, Expires FROM snippets where ID = $1
 	`)
 	row := m.DB.QueryRow(query, id)
 	s := &Snippet{}
@@ -58,8 +58,8 @@ func (m *SnippetModel) Get(id int) (*Snippet, error) {
 }
 
 func (m *SnippetModel) Latest() ([]*Snippet, error) {
-	query := `SELECT id, title, content, created, expires FROM snippets
-	WHERE expires > NOW() ORDER BY id DESC LIMIT 10`
+	query := `SELECT ID, Title, Content, Created, Expires FROM snippets
+	WHERE expires > NOW() ORDER BY ID DESC LIMIT 10`
 	rows, err := m.DB.Query(query)
 	if err != nil {
 		return nil, err
