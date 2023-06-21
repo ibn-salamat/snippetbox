@@ -22,13 +22,13 @@ type SnippetModel struct {
 func (m *SnippetModel) Insert(title string, content string, expires int) (int, error) {
 	query := fmt.Sprintf(`
 	INSERT INTO snippets (title, content, created, expires)
-	VALUES('%s', '%s', NOW(), NOW() + INTERVAL '%d day')
+	VALUES($1, $2, NOW(), NOW() + INTERVAL '%d day')
 	RETURNING id
-	`, title, content, expires)
+	`, expires)
 
 	var id int
 
-	err := m.DB.QueryRow(query).Scan(&id)
+	err := m.DB.QueryRow(query, title, content).Scan(&id)
 
 	if err != nil {
 		return 0, err
@@ -39,9 +39,9 @@ func (m *SnippetModel) Insert(title string, content string, expires int) (int, e
 
 func (m *SnippetModel) Get(id int) (*Snippet, error) {
 	query := fmt.Sprintf(`
-	SELECT id, title, content, created, expires FROM snippets where id = %d
-	`, id)
-	row := m.DB.QueryRow(query)
+	SELECT id, title, content, created, expires FROM snippets where id = $1
+	`)
+	row := m.DB.QueryRow(query, id)
 	s := &Snippet{}
 
 	err := row.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
