@@ -1,8 +1,10 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"snippetbox/internal/models"
 	"strconv"
 )
 
@@ -13,15 +15,15 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	}
 
 	snippets, err := app.snippets.Latest()
-
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	app.render(w, http.StatusOK, "home.html", &templateData{
-		Snippets: snippets,
-	})
+	data := app.newTemplateData(r)
+	data.Snippets = snippets
+
+	app.render(w, http.StatusOK, "home.html", data)
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -34,13 +36,16 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	snippet, err := app.snippets.Get(id)
 
 	if err != nil {
-		app.notFound(w)
+		if errors.Is(err, models.ErrNoRecord) {
+			app.notFound(w)
+		} else {
+			app.serverError(w, err)
+		}
 		return
 	}
 
-	data := &templateData{
-		Snippet: snippet,
-	}
+	data := app.newTemplateData(r)
+	data.Snippet = snippet
 
 	app.render(w, http.StatusOK, "view.html", data)
 }
